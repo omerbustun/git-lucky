@@ -31,7 +31,7 @@ Installation
     
 
     
-    ```go
+    ```bash
     go build
     ```
     
