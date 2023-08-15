@@ -6,10 +6,12 @@ Discover a random GitHub repository from popular programming languages with just
 Features
 --------
 
-*   Randomly selects from popular programming languages.
+*   Randomly selects from popular programming languages or allows you to specify a language of your choice.
 *   Fetches repositories sorted by the latest commit.
 *   Provides a simple command-line interface.
 *   Configurable via a JSON configuration file.
+*   Option to select a specific programming language using the `-lang` flag.
+*   View the help text and options using the `-h` flag.
 
 Prerequisites
 -------------
@@ -21,7 +23,6 @@ Installation
 
 1.  Clone this repository:
     
-
     
     ```bash
     git clone https://github.com/omerbustun/git-lucky.git
@@ -29,7 +30,6 @@ Installation
     
 2.  Navigate to the cloned directory and build the project:
     
-
     
     ```bash
     go build
@@ -37,7 +37,7 @@ Installation
     
 3.  Run `git-lucky`:
     
-
+    
     ```bash
     ./git-lucky
     ```
@@ -48,7 +48,7 @@ Configuration
 
 1.  Copy the sample configuration file:
     
-
+    
     ```bash
     cp config.sample.json config.json
     ```
@@ -68,8 +68,23 @@ Usage
 
 Simply run:
 
+
 ```bash
 ./git-lucky
+```
+
+To specify a language:
+
+
+```bash
+./git-lucky -lang=Python
+```
+
+For help:
+
+
+```bash
+./git-lucky -h
 ```
 
 Contributing

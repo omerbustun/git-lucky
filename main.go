@@ -34,8 +34,16 @@ func LoadConfig(filePath string) (Config, error) {
 func main() {
 	rand.Seed(time.Now().UnixNano())
 
+	var language string
 	configPath := flag.String("config", "config.json", "Path to the configuration file")
+	flag.StringVar(&language, "lang", "", "Specify the programming language (e.g. Go, Python, JavaScript). If not specified, a random language will be chosen.")
+	help := flag.Bool("h", false, "Display the help text.")
 	flag.Parse()
+
+	if *help {
+		flag.Usage()
+		return
+	}
 
 	config, err := LoadConfig(*configPath)
 	if err != nil {
@@ -48,11 +56,27 @@ func main() {
 	}
 
 	languages := []string{"Python", "JavaScript", "Ruby", "Go", "Java", "C++", "TypeScript", "PHP", "C#", "Swift", "Kotlin", "Rust", "R", "Scala", "Perl", "Objective-C", "Lua", "Shell", "Haskell", "Dart"}
-	randomLanguage := languages[rand.Intn(len(languages))]
+
+	if language != "" {
+		validLanguage := false
+		for _, validLang := range languages {
+			if validLang == language {
+				validLanguage = true
+				break
+			}
+		}
+
+		if !validLanguage {
+			fmt.Printf("Error: Invalid language specified. Please choose from: %v\n", languages)
+			return
+		}
+	} else {
+		language = languages[rand.Intn(len(languages))]
+	}
 
 	randomPage := rand.Intn(10) + 1
 
-	apiURL := fmt.Sprintf("https://api.github.com/search/repositories?q=language:%s&sort=updated&order=desc&per_page=100&page=%d", randomLanguage, randomPage)
+	apiURL := fmt.Sprintf("https://api.github.com/search/repositories?q=language:%s&sort=updated&order=desc&per_page=100&page=%d", language, randomPage)
 
 	req, err := http.NewRequest("GET", apiURL, nil)
 	if err != nil {
