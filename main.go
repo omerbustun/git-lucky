@@ -35,7 +35,9 @@ func main() {
 	rand.Seed(time.Now().UnixNano())
 
 	var language string
+  var apiToken string
 	configPath := flag.String("config", "config.json", "Path to the configuration file")
+  flag.StringVar(&apiToken, "api","","API token (optional)")
 	flag.StringVar(&language, "lang", "", "Specify the programming language (e.g. Go, Python, JavaScript). If not specified, a random language will be chosen.")
 	help := flag.Bool("h", false, "Display the help text.")
 	flag.Parse()
@@ -45,7 +47,15 @@ func main() {
 		return
 	}
 
-	config, err := LoadConfig(*configPath)
+  var config Config
+  var err error
+
+  if apiToken != "" {
+    config.APIToken = apiToken
+  } else {
+    config, err = LoadConfig(*configPath)
+  }
+
 	if err != nil {
 		fmt.Printf("Error loading configuration: %s\n", err)
 		os.Exit(1)
