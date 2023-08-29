@@ -3,6 +3,8 @@ git-lucky 🍀
 
 Discover a random GitHub repository from popular programming languages with just one command. Dive into diverse projects, explore new territories, and get inspired.
 
+![Terminal demo](img/demo.gif)
+
 Features
 --------
 
