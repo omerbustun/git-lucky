@@ -11,31 +11,52 @@ import (
 	"time"
 )
 
-type Config struct {
-	APIToken string `json:"api_token"`
-}
-
-func LoadConfig(filePath string) (Config, error) {
-	var config Config
-
-	data, err := ioutil.ReadFile(filePath)
-	if err != nil {
-		return config, err
+func getSnapConfig(key string) (string, error) {
+	socketPath := os.Getenv("SNAPD_SOCKET")
+	if socketPath == "" {
+		socketPath = "/run/snapd.socket"
 	}
 
-	err = json.Unmarshal(data, &config)
+	url := fmt.Sprintf("http://unix/v2/snaps/git-lucky/conf?keys=%s", key)
+	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		return config, err
+		return "", err
 	}
 
-	return config, nil
+	req.Header.Set("Snapd-Socket-Path", socketPath)
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+
+	var result map[string]interface{}
+	json.Unmarshal(body, &result)
+
+	configs, ok := result["result"].(map[string]interface{})
+	if !ok {
+		return "", fmt.Errorf("unexpected response structure")
+	}
+
+	value, ok := configs[key].(string)
+	if !ok {
+		return "", fmt.Errorf("key not found")
+	}
+
+	return value, nil
 }
 
 func main() {
 	rand.Seed(time.Now().UnixNano())
 
 	var language string
-	configPath := flag.String("config", "config.json", "Path to the configuration file")
 	flag.StringVar(&language, "lang", "", "Specify the programming language (e.g. Go, Python, JavaScript). If not specified, a random language will be chosen.")
 	help := flag.Bool("h", false, "Display the help text.")
 	flag.Parse()
@@ -45,13 +66,10 @@ func main() {
 		return
 	}
 
-	config, err := LoadConfig(*configPath)
-	if err != nil {
-		fmt.Printf("Error loading configuration: %s\n", err)
-		os.Exit(1)
-	}
+	// Attempt to retrieve the API token from the snap configuration
+	apiToken, _ := getSnapConfig("api-token")
 
-	if config.APIToken == "" {
+	if apiToken == "" {
 		fmt.Println("Warning: You're making unauthenticated requests to the GitHub API. Consider adding an API token to avoid rate limit issues.")
 	}
 
@@ -84,8 +102,8 @@ func main() {
 		return
 	}
 
-	if config.APIToken != "" {
-		req.Header.Set("Authorization", "token "+config.APIToken)
+	if apiToken != "" {
+		req.Header.Set("Authorization", "token "+apiToken)
 	}
 
 	client := &http.Client{}
